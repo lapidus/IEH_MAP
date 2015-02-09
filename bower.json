@@ -1,0 +1,22 @@
+{
+  "name": "Hunger",
+  "version": "0.0.0",
+  "authors": [
+    "Arek Mytych <amytych@gmail.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "~3.5.4",
+    "topojson": "~1.6.18",
+    "datamaps": "~0.3.4",
+    "lodash": "~3.1.0"
+  }
+}
