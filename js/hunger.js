@@ -34,11 +34,12 @@ function colorize () {
   }
 
   togglers
-    .classed('active', false)
+    .classed('active multiple', false)
     .filter(function (d, i) {
       return activeTypes.indexOf(d3.select(this).attr('data-type')) > -1;
     })
-    .classed('active', true);
+    .classed('active', true)
+    .classed('multiple', activeTypes.length > 1);
 
   map.updateChoropleth(getColors());
   updateInfo(getCount(), getPopulation());

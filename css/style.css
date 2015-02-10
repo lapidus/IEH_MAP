@@ -78,6 +78,11 @@ h2 {
   text-decoration: none;
   color: #000;
   color: #fff;
+  border-right: 1px solid rgba(0,0,0,.1);
+}
+
+.map-nav a:last-child {
+  border-right-width: 0;
 }
 
 .map-nav a.active {
@@ -93,6 +98,9 @@ h2 {
   right: 0;
   height: 10px;
   background-color: rgba(0,0,0,.2);
+}
+.map-nav a.active.multiple {
+  background-color: #15c7eb;
 }
 
 [data-type='Nutrition'] {background-color: #5BA68A; }
