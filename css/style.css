@@ -66,6 +66,11 @@ h2 {
   text-align: center;
 }
 
+.map-nav img {
+  width: 30px;
+  margin-right: 10px;
+}
+
 .map-nav a, .map-nav a:visited {
   float: left;
   width: 25%;
