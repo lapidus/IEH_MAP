@@ -1,9 +1,7 @@
-var conatiner = document.getElementById('container'),
-  list        = d3.select('#list'),
-  listHeader  = d3.select('#list-header'),
-  togglers    = d3.selectAll('.nav a'),
-  debug       = false,
-  data, map, fills, activeTypes = ['Poverty'];
+var container = document.getElementById('map-container'),
+  info        = d3.select('#map-info'),
+  togglers    = d3.selectAll('.map-nav a'),
+  data, population, map, fills, activeTypes = ['Poverty'];
 
 // container.style.height = container.offsetWidth / 2 + 'px';
 
@@ -12,30 +10,18 @@ fills = {
   Poverty     : '#D9C45B',
   Productivity: '#D95829',
   Resilience  : '#D90404',
-  Multiple    : '#59031A',
+  Multiple    : '#15c7eb',
   defaultFill : '#ccc'
 };
 
 // d3.select(window).on('resize', function() {
-//   map.resize();
+//   console.log(map);
+//   // map.resize();
 // });
+
 togglers.on('click', colorize);
-if (debug) list.on('mousemove', highlightMap);
 
 
-function highlightMap () {
-  var iso = d3.select(event.target).attr('data-iso');
-
-  map.svg.selectAll('path.hovered')
-    .style('fill', function (d, i) { return d3.rgb(d3.select(this).style('fill')).brighter(.4)})
-    .classed('hovered', false);
-
-  if (iso) {
-     map.svg.select('path.' + iso)
-      .style('fill', function (d, i) { return d3.rgb(d3.select(this).style('fill')).darker(.4)})
-      .classed('hovered', true);
-  }
-}
 
 function colorize () {
   var type      = d3.select(this).attr('data-type'),
@@ -54,76 +40,78 @@ function colorize () {
     })
     .classed('active', true);
 
-  map.updateChoropleth(getColors(activeTypes));
-  if (debug) listNames(activeTypes, getCount(activeTypes));
+  map.updateChoropleth(getColors());
+  updateInfo(getCount(), getPopulation());
   event.preventDefault();
 }
 
-function getColors (types) {
+function updateInfo (count, pop) {
+  var cType, template;
+
+  if (!count) return info.html('');
+
+  template = '<p>' + count + ' <small>' + (count === 1 ? 'country' : 'countries') + '</small> ' +
+              ((pop / 1000000).toFixed()) + ' <small>million people</small></p>';
+
+  info.html(template);
+}
+
+function getColors () {
   var colors = {},
-    fillType = types.length === 1 ? types[0] : 'Multiple';
+    fillType = activeTypes.length === 1 ? activeTypes[0] : 'Multiple';
 
   data.forEach(function (d) {
-    colors[d.iso3] = {fillKey: isSet(d, types) ? fillType : 'defaultFill'}
+    colors[d.iso3] = {fillKey: isSet(d) ? fillType : 'defaultFill'}
   });
 
   return colors;
 }
 
-function listNames (types, count) {
-  var template = '';
-
-  data.forEach(function (d) {
-    if (isSet(d, types)) template += ('<span data-iso="' + d.iso3 + '">' + d.name + '</span>');
-  });
-
-  updateListHeader(types, count);
-
-  list.html(template);
-}
-
-function updateListHeader (types, count) {
-  var cType = count === 1 ? 'country' : 'countries',
-    template = types.length ? count + ' ' + cType + ' with ' : '';
-
-  types.forEach(function (type, index) {
-    template += type;
-    if (index < types.length - 2) template += ', ';
-    if (index === types.length - 2) template += ' and ';
-  });
-
-  listHeader.html(template);
-}
-
-function getCount (types) {
+function getCount () {
   var counter = 0;
 
   data.forEach(function (d) {
-    if (isSet(d, types)) counter++;
+    if (isSet(d)) counter++;
   });
 
   return counter;
 }
 
-function isSet (d, types) {
-  var isSet = types.length ? true : false;
-  for (var i = types.length - 1; i >= 0; i--) {
-    isSet = d[types[i]];
+
+function getPopulation () {
+  var pop = 0;
+
+  data.forEach(function (d) {
+    if (isSet(d)) pop += +_.find(population, {'Country Code': d.iso3}).Value;
+  });
+
+  return pop;
+}
+
+
+function isSet (d) {
+  var isSet = activeTypes.length ? true : false;
+  for (var i = activeTypes.length - 1; i >= 0; i--) {
+    isSet = d[activeTypes[i]];
     if (!isSet) break;
   };
   return isSet;
 } 
 
 d3.json('data/data.json', function (error, d) {
-  data = d;
-  map = new Datamap({
-    responsive: true,
-    projection: 'mercator',
-    element: container,
-    fills: fills,
-    data: getColors(activeTypes)
-  });
+  d3.json('data/population.json', function (error, p) {
+    population = p;
+    data = d;
 
-  if (debug) listNames(activeTypes, getCount(activeTypes));
+    map = new Datamap({
+      responsive: true,
+      projection: 'mercator',
+      element: container,
+      fills: fills,
+      data: getColors()
+    });
+
+    updateInfo(getCount(), getPopulation());
+  });
 });
 
